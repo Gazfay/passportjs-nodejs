@@ -1,6 +1,9 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const Users = require('./../models').Users;
+const GoogleUsers = require('./../models').GoogleUsers;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const configAuth = require('./../config/auth');
 
 var passportUtil = {
 	init: (app) => {
@@ -13,13 +16,21 @@ var passportUtil = {
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
-      Users.findById(id)
-	      .then(user => {
-	        done(null, user);
-	      })
-	      .catch(err => {
-	  			done(err);
-	      });
+      Promise.all([
+        Users.findById(id),
+        GoogleUsers.findById(id)
+        ]
+      )
+      .then(users => {
+        users.forEach((user)=> {
+          if (user !== null) {
+            done(null, user);
+          }
+        });
+      })
+      .catch(err => {
+        done(err);
+      });
     });
 
     passport.use('local-login', new LocalStrategy({
@@ -51,6 +62,49 @@ var passportUtil = {
 	    		});
     	});
     }));
+
+
+    passport.use(new GoogleStrategy({
+        clientID        : configAuth.googleAuth.clientID,
+        clientSecret    : configAuth.googleAuth.clientSecret,
+        callbackURL     : configAuth.googleAuth.callbackURL,
+    },
+    function(token, refreshToken, profile, done) {
+
+      process.nextTick(function() {
+
+        GoogleUsers.findOne({
+          where: {id: profile.id}
+        })
+          .then(user => {
+            if(user !== null) {
+              return done(null, user);
+            } else {
+              GoogleUsers.create({
+                id: profile.id,
+                token: token,
+                name: profile.displayName,
+                email: profile.emails[0].value
+              })
+              .then(user => {
+                return done(null, user);
+              })
+              .catch(err => {
+                return done(null, false, err);
+              });
+            }
+
+
+          })
+          .catch(err => {
+            console.log('err', err);
+            return done(null, false, err);
+          });
+      });
+    }));
+
+
+
 
 	}
 }

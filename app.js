@@ -20,6 +20,7 @@ var app = express();
 const Sequelize = require('sequelize');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./db/users.db');
+const GoogleUsers = require('./models').GoogleUsers;
 
 
 var passportUtil = require('./utils/passportUtil');
@@ -43,6 +44,9 @@ models.sequelize
   .authenticate()
   .then(function () {
     console.log('Connection successful');
+    GoogleUsers.findAll().then(all=> {
+      console.log(all, 'all');
+    })
   })
   .catch(function(error) {
     console.log("Error creating connection:", error);

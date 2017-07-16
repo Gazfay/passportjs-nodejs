@@ -1,6 +1,7 @@
 const path = require('path');
 const passport = require('passport');
 const Users = require('./../models').Users;
+const GoogleUsers = require('./../models').GoogleUsers;
 
 const authController = {
 	login: (req, res, next) => {
@@ -78,6 +79,10 @@ const authController = {
 			});
 		}
 	},
+
+  getUser: (req, res, err) => {
+    res.send(req.user);
+  },
 
 	logout: (req, res, err) => {
 		req.logout();
