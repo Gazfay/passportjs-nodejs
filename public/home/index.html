@@ -17,10 +17,27 @@
         <p>Login or Register with:</p>
 
         <a href="/login" class="btn btn-default"><span class="fa fa-user"></span> Local Login</a>
-        <a href="/auth/google" class="btn btn-danger"><span class="fa fa-google-plus"></span> Google</a>
+        <a href="#" onClick="getAuth()"  class="btn btn-danger"><span class="fa fa-google-plus"></span> Google</a>
         <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span> Local Signup</a>
     </div>
 
 	</div>
+  <script> 
+     function getAuth() {
+      var win = window.open('/auth/google', "windowname1", 'width=800, height=600');
+      var polltimer = setInterval(function() { 
+        try {
+          if (win.document.URL.indexOf('app') !== -1) {
+            win.close();
+            document.body.innerHTML = '';
+            clearInterval(polltimer);
+            window.location.href = '/app';
+          }
+        } catch(e) {}
+      }, 50);
+    }
+
+
+  </script>
 </body>
 </html>
